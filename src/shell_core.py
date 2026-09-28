@@ -1,10 +1,11 @@
 """Core shell logic including environment expansion and command dispatch."""
 
-import getpass
 import os
 import re
 import shlex
-import socket
+from typing import Optional
+
+from src.config import Config, format_conf_dump
 
 
 def _validate_env_syntax(text: str) -> None:
@@ -54,10 +55,11 @@ def parse_command_line(raw_line: str) -> list[str]:
 class ShellCore:
     """Shell emulator core handling execution and state."""
 
-    def __init__(self) -> None:
-        """Initialize shell core with user and host information."""
-        self.username = getpass.getuser()
-        self.hostname = socket.gethostname()
+    def __init__(self, config: Optional[Config] = None) -> None:
+        """Initialize shell core with configuration, user and host."""
+        self.config = config or Config()
+        self.username = self.config.username
+        self.hostname = self.config.hostname
         self.cwd = "/"
         self.is_exit = False
 
@@ -69,18 +71,51 @@ class ShellCore:
         """Return shell prompt string."""
         return f"[{self.username}@{self.hostname} {self.cwd}]$ "
 
+    def execute_script_file(self, script_path: str) -> tuple[int, str]:
+        """Execute commands from script file sequentially."""
+        if not os.path.exists(script_path):
+            return 1, f"script error: file not found: {script_path}"
+        try:
+            with open(script_path, "r", encoding="utf-8") as f_in:
+                lines = [line.rstrip("\r\n") for line in f_in]
+        except OSError as err:
+            return 1, f"script error: failed to read {script_path}: {err}"
+
+        outputs: list[str] = []
+        for line in lines:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            code, out = self.execute_line(line)
+            if out:
+                outputs.append(out)
+            if code != 0:
+                outputs.append(f"script aborted at: {line}")
+                return code, "\n".join(outputs)
+            if self.is_exit:
+                break
+        return 0, "\n".join(outputs)
+
     def _dispatch_command(
         self,
         cmd: str,
         args: list[str],
     ) -> tuple[int, str]:
-        """Dispatch command name to stub or exit handler."""
+        """Dispatch command name to stub, conf-dump or exit handler."""
         if cmd == "exit":
             if args:
                 return 1, "exit: too many arguments"
             self.is_exit = True
             return 0, "logout"
-        if cmd in ("ls", "cd"):
+        if cmd == "conf-dump":
+            if args:
+                return 1, "conf-dump: does not accept arguments"
+            return 0, format_conf_dump(self.config)
+        if cmd in ("source", "run-script"):
+            if len(args) != 1:
+                return 1, f"{cmd}: exactly one script file argument required"
+            return self.execute_script_file(args[0])
+        if cmd in ("ls", "cd", "cat", "rev", "touch", "mv"):
             args_repr = " ".join(args) if args else "(no arguments)"
             return 0, f"{cmd} (stub): called with args: {args_repr}"
 

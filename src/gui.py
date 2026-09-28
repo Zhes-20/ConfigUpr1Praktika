@@ -1,10 +1,14 @@
 """Graphical user interface for the shell emulator using Tkinter."""
 
+import os
 import tkinter as tk
 from tkinter import font
 from typing import Callable, Optional
 
 from src.shell_core import ShellCore
+
+SCRIPT_STEP_DELAY_MS = 200
+EXIT_DELAY_MS = 300
 
 
 class ShellGui:
@@ -20,6 +24,7 @@ class ShellGui:
         self.on_exit = on_exit
         self.history: list[str] = []
         self.history_index = -1
+        self.script_lines: list[str] = []
 
         self.root = tk.Tk()
         self.root.title(self.shell.get_title())
@@ -29,7 +34,8 @@ class ShellGui:
 
         self.term_font = font.Font(family="Courier", size=13)
         self._build_widgets()
-        self._show_welcome()
+        self._show_welcome_banner()
+        self._check_and_run_script()
 
     def _build_widgets(self) -> None:
         """Create and place console text display and input frame."""
@@ -86,12 +92,75 @@ class ShellGui:
         self.text_area.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.config(command=self.text_area.yview)
 
-    def _show_welcome(self) -> None:
-        """Display startup message in console widget."""
-        self.write_output(
-            "Эмулятор командной строки UNIX (Этап 1: REPL)\n"
-            "Доступные команды: ls (заглушка), cd (заглушка), exit\n\n"
-        )
+    def _show_welcome_banner(self) -> None:
+        """Display startup debug info and greeting message."""
+        banner = self.shell.config.dump_debug_info()
+        self.write_output(f"{banner}\n\n")
+
+    def _enable_user_input(self) -> None:
+        """Enable keyboard input in terminal entry field."""
+        self.entry.configure(state=tk.NORMAL)
+        self.entry.focus_set()
+
+    def _check_and_run_script(self) -> None:
+        """Load startup script if path is provided in configuration."""
+        script_path = self.shell.config.script_path
+        if not script_path:
+            return
+
+        self.entry.configure(state=tk.DISABLED)
+        if not os.path.exists(script_path):
+            self.write_output(
+                f"[ERROR] Стартовый скрипт не найден: {script_path}\n"
+            )
+            self._enable_user_input()
+            return
+
+        try:
+            with open(script_path, "r", encoding="utf-8") as file_handle:
+                self.script_lines = [
+                    line.rstrip("\r\n") for line in file_handle
+                ]
+            self.root.after(SCRIPT_STEP_DELAY_MS, self._run_next_script_line)
+        except OSError as err:
+            self.write_output(
+                f"[ERROR] Ошибка чтения стартового скрипта: {err}\n"
+            )
+            self._enable_user_input()
+
+    def _run_next_script_line(self) -> None:
+        """Execute one script line and schedule next if no error."""
+        if not self.script_lines:
+            self._enable_user_input()
+            return
+
+        line = self.script_lines.pop(0)
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            if stripped.startswith("#"):
+                self.write_output(f"{stripped}\n")
+            self.root.after(SCRIPT_STEP_DELAY_MS, self._run_next_script_line)
+            return
+
+        prompt_str = self.shell.get_prompt()
+        self.write_output(f"{prompt_str}{line}\n")
+        code, out = self.shell.execute_line(line)
+        if out:
+            self.write_output(f"{out}\n")
+
+        self._update_prompt()
+        if code != 0:
+            self.write_output(
+                f"[SCRIPT ERROR] Скрипт остановлен из-за ошибки (код {code})\n"
+            )
+            self._enable_user_input()
+            return
+
+        if self.shell.is_exit:
+            self.root.after(EXIT_DELAY_MS, self.root.destroy)
+            return
+
+        self.root.after(SCRIPT_STEP_DELAY_MS, self._run_next_script_line)
 
     def write_output(self, text: str) -> None:
         """Append text to the console display widget."""
@@ -121,7 +190,7 @@ class ShellGui:
 
         self._update_prompt()
         if self.shell.is_exit:
-            self.root.after(300, self.root.destroy)
+            self.root.after(EXIT_DELAY_MS, self.root.destroy)
 
     def _handle_history_up(self, _event: tk.Event) -> None:
         """Navigate backward in command history."""
