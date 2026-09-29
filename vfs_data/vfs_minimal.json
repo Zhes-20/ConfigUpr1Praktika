@@ -1,0 +1,16 @@
+{
+  "name": "/",
+  "type": "dir",
+  "permissions": "rwxr-xr-x",
+  "owner": "root",
+  "mtime": "2026-09-28 10:00:00",
+  "children": {
+    "hello.txt": {
+      "type": "file",
+      "permissions": "rw-r--r--",
+      "owner": "student",
+      "mtime": "2026-09-28 10:00:00",
+      "content": "SGVsbG8sIE1pbmltYWwgVkZTIQo="
+    }
+  }
+}

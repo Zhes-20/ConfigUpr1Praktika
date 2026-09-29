@@ -93,9 +93,18 @@ class ShellGui:
         scrollbar.config(command=self.text_area.yview)
 
     def _show_welcome_banner(self) -> None:
-        """Display startup debug info and greeting message."""
+        """Display startup debug info, VFS structure and greeting message."""
         banner = self.shell.config.dump_debug_info()
-        self.write_output(f"{banner}\n\n")
+        self.write_output(f"{banner}\n")
+        if self.shell.vfs_error:
+            self.write_output(
+                f"[ERROR] Ошибка загрузки VFS: {self.shell.vfs_error}\n"
+            )
+        elif self.shell.config.vfs_path:
+            self.write_output("[DEBUG] Загруженная структура VFS:\n")
+            for node_line in self.shell.vfs.dump_structure():
+                self.write_output(f"  {node_line}\n")
+        self.write_output("\nДобро пожаловать в эмулятор!\n\n")
 
     def _enable_user_input(self) -> None:
         """Enable keyboard input in terminal entry field."""

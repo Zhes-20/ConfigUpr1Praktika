@@ -1,0 +1,47 @@
+{
+  "name": "/",
+  "type": "dir",
+  "permissions": "rwxr-xr-x",
+  "owner": "root",
+  "mtime": "2026-09-28 10:00:00",
+  "children": {
+    "root_file.txt": {
+      "type": "file",
+      "permissions": "rw-r--r--",
+      "owner": "admin",
+      "mtime": "2026-09-28 10:01:00",
+      "content": "SGVsbG8sIE1pbmltYWwgVkZTIQo="
+    },
+    "level1": {
+      "type": "dir",
+      "permissions": "rwxr-xr-x",
+      "owner": "root",
+      "mtime": "2026-09-28 10:02:00",
+      "children": {
+        "level2": {
+          "type": "dir",
+          "permissions": "rwxr-x---",
+          "owner": "deploy",
+          "mtime": "2026-09-28 10:03:00",
+          "children": {
+            "level3": {
+              "type": "dir",
+              "permissions": "rwx------",
+              "owner": "deploy",
+              "mtime": "2026-09-28 10:04:00",
+              "children": {
+                "deep_file.txt": {
+                  "type": "file",
+                  "permissions": "r--------",
+                  "owner": "deploy",
+                  "mtime": "2026-09-28 10:05:00",
+                  "content": "RGVlcCBuZXN0ZWQgZmlsZSBjb250ZW50IGF0IGxldmVsIDMhCg=="
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -6,6 +6,7 @@ import shlex
 from typing import Optional
 
 from src.config import Config, format_conf_dump
+from src.vfs import Vfs
 
 
 def _validate_env_syntax(text: str) -> None:
@@ -56,12 +57,24 @@ class ShellCore:
     """Shell emulator core handling execution and state."""
 
     def __init__(self, config: Optional[Config] = None) -> None:
-        """Initialize shell core with configuration, user and host."""
+        """Initialize shell core with configuration, VFS and state."""
         self.config = config or Config()
         self.username = self.config.username
         self.hostname = self.config.hostname
         self.cwd = "/"
         self.is_exit = False
+        self.vfs = Vfs()
+        self.vfs_error: Optional[str] = None
+        self._load_vfs()
+
+    def _load_vfs(self) -> None:
+        """Load virtual file system from configured JSON file path."""
+        if not self.config.vfs_path:
+            return
+        try:
+            self.vfs.load_from_json(self.config.vfs_path)
+        except (FileNotFoundError, ValueError) as load_err:
+            self.vfs_error = str(load_err)
 
     def get_title(self) -> str:
         """Return formatted window title based on OS user and hostname."""

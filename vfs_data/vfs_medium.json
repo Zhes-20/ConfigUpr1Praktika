@@ -1,0 +1,31 @@
+{
+  "name": "/",
+  "type": "dir",
+  "permissions": "rwxr-xr-x",
+  "owner": "root",
+  "mtime": "2026-09-28 10:00:00",
+  "children": {
+    "readme.txt": {
+      "type": "file",
+      "permissions": "rw-r--r--",
+      "owner": "root",
+      "mtime": "2026-09-28 10:05:00",
+      "content": "VU5JWCBTaGVsbCBFbXVsYXRvciBQcm9qZWN0CkNvdXJzZTogQ29uZmlndXJhdGlvbiBNYW5hZ2VtZW50Cg=="
+    },
+    "docs": {
+      "type": "dir",
+      "permissions": "rwxr-xr-x",
+      "owner": "student",
+      "mtime": "2026-09-28 10:10:00",
+      "children": {
+        "notes.txt": {
+          "type": "file",
+          "permissions": "rw-rw-r--",
+          "owner": "student",
+          "mtime": "2026-09-28 10:15:00",
+          "content": "U3lzdGVtIGNvbmZpZ3VyYXRpb24gbm90ZXMKTGluZSAyIG9mIG5vdGVzCg=="
+        }
+      }
+    }
+  }
+}
