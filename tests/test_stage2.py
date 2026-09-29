@@ -71,14 +71,13 @@ class TestStage2Config(unittest.TestCase):
         """Verify executing a valid script file sequentially."""
         shell = ShellCore()
         with tempfile.NamedTemporaryFile("w+", delete=False) as tmp_file:
-            tmp_file.write("# Test script\nconf-dump\nls /tmp\n")
+            tmp_file.write("# Test script\nconf-dump\nls\n")
             tmp_path = tmp_file.name
 
         try:
             code, out = shell.execute_script_file(tmp_path)
             self.assertEqual(code, 0)
             self.assertIn("vfs_path:", out)
-            self.assertIn("ls (stub): called with args: /tmp", out)
         finally:
             os.remove(tmp_path)
 

@@ -69,7 +69,6 @@ shell = ShellCore()
 code, out = shell.execute_script_file('emulator_scripts/stage2_demo.txt')
 assert code == 0, f'Expected 0, got {code}'
 assert 'vfs_path:' in out
-assert 'ls (stub)' in out
 print('[OK] Штатный скрипт выполнен успешно:')
 print(out)
 "

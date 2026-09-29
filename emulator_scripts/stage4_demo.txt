@@ -1,0 +1,18 @@
+# Стартовый скрипт для тестирования команд Этапа 4
+conf-dump
+ls
+ls docs
+cd docs
+ls
+cat notes.txt
+rev notes.txt
+cd ..
+cat readme.txt
+rev readme.txt
+# Проверка обработки ошибок команд
+cd readme.txt
+cat docs
+cat non_existent.txt
+rev non_existent.txt
+ls /non_existent_folder
+exit

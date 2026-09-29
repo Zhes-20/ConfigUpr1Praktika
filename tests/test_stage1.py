@@ -53,17 +53,15 @@ class TestStage1Repl(unittest.TestCase):
         self.assertIn(self.shell.username, title)
         self.assertIn(self.shell.hostname, title)
 
-    def test_ls_stub(self) -> None:
-        """Verify ls stub outputs command name and arguments."""
-        code, out = self.shell.execute_line("ls -l /tmp")
+    def test_ls_invocation(self) -> None:
+        """Verify ls command responds on root directory."""
+        code, _ = self.shell.execute_line("ls")
         self.assertEqual(code, 0)
-        self.assertIn("ls (stub): called with args: -l /tmp", out)
 
-    def test_cd_stub(self) -> None:
-        """Verify cd stub outputs command name and arguments."""
-        code, out = self.shell.execute_line("cd $TEST_DIR")
+    def test_cd_invocation(self) -> None:
+        """Verify cd command responds on root directory."""
+        code, _ = self.shell.execute_line("cd /")
         self.assertEqual(code, 0)
-        self.assertIn("cd (stub): called with args: /tmp/demo", out)
 
     def test_exit_command(self) -> None:
         """Verify exit command sets is_exit flag."""

@@ -3,8 +3,9 @@
 import os
 import re
 import shlex
-from typing import Optional
+from typing import Callable, Optional
 
+from src.commands import cmd_cat, cmd_cd, cmd_ls, cmd_rev
 from src.config import Config, format_conf_dump
 from src.vfs import Vfs
 
@@ -114,7 +115,7 @@ class ShellCore:
         cmd: str,
         args: list[str],
     ) -> tuple[int, str]:
-        """Dispatch command name to stub, conf-dump or exit handler."""
+        """Dispatch command name to corresponding handler function."""
         if cmd == "exit":
             if args:
                 return 1, "exit: too many arguments"
@@ -128,9 +129,16 @@ class ShellCore:
             if len(args) != 1:
                 return 1, f"{cmd}: exactly one script file argument required"
             return self.execute_script_file(args[0])
-        if cmd in ("ls", "cd", "cat", "rev", "touch", "mv"):
-            args_repr = " ".join(args) if args else "(no arguments)"
-            return 0, f"{cmd} (stub): called with args: {args_repr}"
+
+        table: dict[str, Callable[[list[str]], tuple[int, str]]] = {
+            "ls": lambda a: cmd_ls(self, a),
+            "cd": lambda a: cmd_cd(self, a),
+            "cat": lambda a: cmd_cat(self, a),
+            "rev": lambda a: cmd_rev(self, a),
+        }
+        handler = table.get(cmd)
+        if handler is not None:
+            return handler(args)
 
         return 127, f"{cmd}: command not found"
 
