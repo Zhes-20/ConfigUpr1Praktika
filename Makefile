@@ -3,7 +3,7 @@ PYTHON ?= $(shell if command -v uv >/dev/null 2>&1; then echo "uv run --python 3
 .PHONY: test lint check run test-cli test-vfs help
 
 help:
-	@echo "Доступные команды (Этап 4: ls, cd, cat, rev):"
+	@echo "Доступные команды (Этап 5: touch, mv):"
 	@echo "  make test      - Запуск unit-тестов"
 	@echo "  make lint      - Проверка стандартов оформления кода"
 	@echo "  make test-cli  - Проверка параметров командной строки"
@@ -26,4 +26,4 @@ test-vfs:
 check: lint test test-cli test-vfs
 
 run:
-	./run.sh --vfs vfs_data/vfs_medium.json --script emulator_scripts/stage4_demo.txt
+	./run.sh --vfs vfs_data/vfs_medium.json --script emulator_scripts/stage5_demo.txt

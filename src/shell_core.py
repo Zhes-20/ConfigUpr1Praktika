@@ -5,7 +5,7 @@ import re
 import shlex
 from typing import Callable, Optional
 
-from src.commands import cmd_cat, cmd_cd, cmd_ls, cmd_rev
+from src.commands import cmd_cat, cmd_cd, cmd_ls, cmd_mv, cmd_rev, cmd_touch
 from src.config import Config, format_conf_dump
 from src.vfs import Vfs
 
@@ -135,6 +135,8 @@ class ShellCore:
             "cd": lambda a: cmd_cd(self, a),
             "cat": lambda a: cmd_cat(self, a),
             "rev": lambda a: cmd_rev(self, a),
+            "touch": lambda a: cmd_touch(self, a),
+            "mv": lambda a: cmd_mv(self, a),
         }
         handler = table.get(cmd)
         if handler is not None:

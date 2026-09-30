@@ -1,0 +1,21 @@
+# Стартовый скрипт для тестирования команд Этапа 5 (touch, mv)
+conf-dump
+# Показать текущее содержимое VFS
+ls
+# Создание нового файла через touch
+touch new_file.txt
+ls
+cat new_file.txt
+# Переименование файла через mv
+mv new_file.txt renamed.txt
+ls
+# Перемещение файла в подкаталог
+mv renamed.txt docs
+ls
+ls docs
+# Чтение перемещённого файла
+cat docs/renamed.txt
+# Обработка ошибок
+touch /non_exist_dir/test.txt
+mv ghost.txt docs
+exit
