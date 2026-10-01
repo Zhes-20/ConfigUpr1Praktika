@@ -1,18 +1,15 @@
-# Стартовый скрипт для тестирования команд Этапа 4
+# Этап 4: команды ls, cd, cat, rev (vfs_data/vfs_medium.json)
 conf-dump
 ls
 ls docs
+ls docs readme.txt
 cd docs
 ls
 cat notes.txt
 rev notes.txt
 cd ..
-cat readme.txt
+cd
+cat readme.txt docs/notes.txt
 rev readme.txt
-# Проверка обработки ошибок команд
-cd readme.txt
-cat docs
-cat non_existent.txt
-rev non_existent.txt
-ls /non_existent_folder
+# Примеры ошибок: emulator_scripts/errors/
 exit

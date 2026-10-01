@@ -5,20 +5,34 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.shell_core import ShellCore
 
+MV_OPERANDS_COUNT = 2
 
-def cmd_ls(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
-    """List directory contents or file info in virtual file system."""
-    target = args[0] if args else shell.cwd
+
+def _list_target(shell: "ShellCore", target: str) -> tuple[int, str]:
+    """List single directory or file path in virtual file system."""
     resolved = shell.vfs.resolve_path(shell.cwd, target)
     node = shell.vfs.get_node(resolved)
     if node is None:
         return 1, f"ls: cannot access '{target}': No such file or directory"
-
     if not node.is_dir:
         return 0, node.name
+    return 0, "  ".join(shell.vfs.list_dir(resolved))
 
-    items = shell.vfs.list_dir(resolved)
-    return 0, "  ".join(items)
+
+def cmd_ls(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
+    """List contents of one or more paths in virtual file system."""
+    for arg in args:
+        if arg.startswith("-"):
+            return 1, f"ls: unsupported option '{arg}'"
+
+    targets = args or [shell.cwd]
+    outputs: list[str] = []
+    for target in targets:
+        code, out = _list_target(shell, target)
+        if code != 0:
+            return code, out
+        outputs.append(f"{target}:\n{out}" if len(targets) > 1 else out)
+    return 0, "\n\n".join(outputs)
 
 
 def cmd_cd(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
@@ -88,7 +102,7 @@ def cmd_touch(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
         resolved = shell.vfs.resolve_path(shell.cwd, path_arg)
         try:
             shell.vfs.touch(resolved)
-        except (FileNotFoundError, IsADirectoryError, ValueError) as err:
+        except (OSError, ValueError) as err:
             return 1, f"touch: cannot touch '{path_arg}': {err}"
 
     return 0, ""
@@ -100,7 +114,7 @@ def cmd_mv(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
         return 1, "mv: missing file operand"
     if len(args) == 1:
         return 1, f"mv: missing destination file operand after '{args[0]}'"
-    if len(args) > 2:
+    if len(args) > MV_OPERANDS_COUNT:
         return 1, "mv: too many arguments"
 
     src_arg, dst_arg = args[0], args[1]
@@ -109,11 +123,7 @@ def cmd_mv(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
 
     try:
         shell.vfs.move(src_res, dst_res)
-    except (
-        PermissionError,
-        FileNotFoundError,
-        ValueError,
-    ) as err:
+    except (OSError, ValueError) as err:
         return 1, f"mv: cannot move '{src_arg}': {err}"
 
     return 0, ""

@@ -1,0 +1,3 @@
+# Ошибка: touch в несуществующем каталоге
+ls
+touch /no_such_dir/file.txt

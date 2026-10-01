@@ -3,13 +3,13 @@ PYTHON ?= $(shell if command -v uv >/dev/null 2>&1; then echo "uv run --python 3
 .PHONY: test lint check run test-cli test-vfs help
 
 help:
-	@echo "Доступные команды (Этап 5: touch, mv):"
-	@echo "  make test      - Запуск unit-тестов"
-	@echo "  make lint      - Проверка стандартов оформления кода"
-	@echo "  make test-cli  - Проверка параметров командной строки"
-	@echo "  make test-vfs  - Проверка загрузки вариантов VFS"
-	@echo "  make check     - Полная проверка (стиль + тесты + скрипты ОС)"
-	@echo "  make run       - Запуск эмулятора с VFS и демо-скриптом"
+	@echo "Доступные команды:"
+	@echo "  make test      - запуск unit-тестов"
+	@echo "  make lint      - проверка оформления кода"
+	@echo "  make check     - проверка оформления и unit-тесты"
+	@echo "  make test-cli  - запуски эмулятора с параметрами CLI (окна GUI)"
+	@echo "  make test-vfs  - запуски эмулятора с вариантами VFS (окна GUI)"
+	@echo "  make run       - запуск эмулятора с VFS и демо-скриптом"
 
 test:
 	$(PYTHON) -m unittest discover -s tests -v
@@ -23,7 +23,8 @@ test-cli:
 test-vfs:
 	bash os_scripts/test_vfs_variants.sh
 
-check: lint test test-cli test-vfs
+check: lint test
 
 run:
-	./run.sh --vfs vfs_data/vfs_medium.json --script emulator_scripts/stage5_demo.txt
+	./run.sh --vfs vfs_data/vfs_medium.json \
+		--script emulator_scripts/stage5_demo.txt

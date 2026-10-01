@@ -5,15 +5,12 @@ import unittest
 
 from src.shell_core import ShellCore, expand_env_vars, parse_command_line
 
+os.environ["TEST_USER"] = "alice"
+os.environ["TEST_DIR"] = "/tmp/demo"
+
 
 class TestStage1Repl(unittest.TestCase):
     """Test suite for stage 1 parser and shell core functionality."""
-
-    def setUp(self) -> None:
-        """Prepare shell instance and environment variables for testing."""
-        self.shell = ShellCore()
-        os.environ["TEST_USER"] = "alice"
-        os.environ["TEST_DIR"] = "/tmp/demo"
 
     def test_expand_simple_env_var(self) -> None:
         """Verify simple $VAR expansion."""
@@ -37,38 +34,44 @@ class TestStage1Repl(unittest.TestCase):
 
     def test_parse_syntax_error_quotes(self) -> None:
         """Verify error handling on unclosed quotations."""
-        code, out = self.shell.execute_line('ls "unclosed string')
+        shell = ShellCore()
+        code, out = shell.execute_line('ls "unclosed string')
         self.assertEqual(code, 1)
         self.assertIn("syntax error", out)
 
     def test_leading_whitespace_syntax_error(self) -> None:
         """Verify error handling on leading whitespace before command."""
-        code, out = self.shell.execute_line("  ls")
+        shell = ShellCore()
+        code, out = shell.execute_line("  ls")
         self.assertEqual(code, 1)
         self.assertIn("unexpected leading whitespace", out)
 
     def test_title_contains_user_and_host(self) -> None:
         """Verify window title contains system username and hostname."""
-        title = self.shell.get_title()
-        self.assertIn(self.shell.username, title)
-        self.assertIn(self.shell.hostname, title)
+        shell = ShellCore()
+        title = shell.get_title()
+        self.assertIn(shell.username, title)
+        self.assertIn(shell.hostname, title)
 
     def test_ls_invocation(self) -> None:
         """Verify ls command responds on root directory."""
-        code, _ = self.shell.execute_line("ls")
+        shell = ShellCore()
+        code, _ = shell.execute_line("ls")
         self.assertEqual(code, 0)
 
     def test_cd_invocation(self) -> None:
         """Verify cd command responds on root directory."""
-        code, _ = self.shell.execute_line("cd /")
+        shell = ShellCore()
+        code, _ = shell.execute_line("cd /")
         self.assertEqual(code, 0)
 
     def test_exit_command(self) -> None:
         """Verify exit command sets is_exit flag."""
-        self.assertFalse(self.shell.is_exit)
-        code, out = self.shell.execute_line("exit")
+        shell = ShellCore()
+        self.assertFalse(shell.is_exit)
+        code, out = shell.execute_line("exit")
         self.assertEqual(code, 0)
-        self.assertTrue(self.shell.is_exit)
+        self.assertTrue(shell.is_exit)
         self.assertEqual(out, "logout")
 
 

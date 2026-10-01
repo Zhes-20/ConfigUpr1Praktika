@@ -1,0 +1,4 @@
+# Минимальная VFS (vfs_data/vfs_minimal.json)
+ls
+cat hello.txt
+exit

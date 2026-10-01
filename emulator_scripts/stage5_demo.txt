@@ -1,21 +1,17 @@
-# Стартовый скрипт для тестирования команд Этапа 5 (touch, mv)
-conf-dump
-# Показать текущее содержимое VFS
+# Этап 5: команды touch, mv (vfs_data/vfs_medium.json)
 ls
-# Создание нового файла через touch
+# touch: новый файл, несколько файлов, существующий файл
 touch new_file.txt
+touch a.txt b.txt
+touch readme.txt
 ls
 cat new_file.txt
-# Переименование файла через mv
+# mv: переименование, перемещение в каталог, каталог
 mv new_file.txt renamed.txt
-ls
-# Перемещение файла в подкаталог
 mv renamed.txt docs
-ls
 ls docs
-# Чтение перемещённого файла
-cat docs/renamed.txt
-# Обработка ошибок
-touch /non_exist_dir/test.txt
-mv ghost.txt docs
+mv docs papers
+ls
+ls papers
+# Примеры ошибок: emulator_scripts/errors/
 exit

@@ -4,7 +4,16 @@ import base64
 import binascii
 import json
 import os
+from datetime import datetime
 from typing import Optional
+
+
+MTIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+
+def current_mtime() -> str:
+    """Return current time formatted as node modification time."""
+    return datetime.now().strftime(MTIME_FORMAT)
 
 
 class VfsNode:
@@ -185,8 +194,7 @@ class Vfs:
         """Create empty file or touch existing file at canonical path."""
         node = self.get_node(canonical_path)
         if node is not None:
-            if node.is_dir:
-                raise IsADirectoryError(f"Является каталогом: {canonical_path}")
+            node.mtime = current_mtime()
             return
 
         segments = self.split_path(canonical_path)
@@ -206,7 +214,9 @@ class Vfs:
             )
 
         parent_node.children[file_name] = VfsNode(
-            name=file_name, is_dir=False, content=""
+            name=file_name,
+            is_dir=False,
+            meta={"mtime": current_mtime()},
         )
 
     def _validate_move_source(
@@ -261,5 +271,8 @@ class Vfs:
             del src_parent.children[src_name]
             dst_node.children[src_name] = src_node
             return
+
+        if dst_node is not None and src_node.is_dir:
+            raise ValueError("Нельзя заменить файл каталогом")
 
         self._move_to_new_name(src_parent, src_node, src_name, dst_path)

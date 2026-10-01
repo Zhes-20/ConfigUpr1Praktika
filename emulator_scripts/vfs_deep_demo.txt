@@ -1,0 +1,8 @@
+# Глубокая VFS, 3 уровня (vfs_data/vfs_deep.json)
+ls
+cd level1/level2/level3
+ls
+cat deep_file.txt
+cd /
+cat root_file.txt
+exit
