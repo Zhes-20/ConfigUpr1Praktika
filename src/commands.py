@@ -1,5 +1,3 @@
-"""Implementations of shell commands operating on virtual file system."""
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -9,7 +7,6 @@ MV_OPERANDS_COUNT = 2
 
 
 def _list_target(shell: "ShellCore", target: str) -> tuple[int, str]:
-    """List single directory or file path in virtual file system."""
     resolved = shell.vfs.resolve_path(shell.cwd, target)
     node = shell.vfs.get_node(resolved)
     if node is None:
@@ -20,7 +17,6 @@ def _list_target(shell: "ShellCore", target: str) -> tuple[int, str]:
 
 
 def cmd_ls(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
-    """List contents of one or more paths in virtual file system."""
     for arg in args:
         if arg.startswith("-"):
             return 1, f"ls: unsupported option '{arg}'"
@@ -36,7 +32,6 @@ def cmd_ls(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
 
 
 def cmd_cd(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
-    """Change current working directory in virtual file system."""
     if len(args) > 1:
         return 1, "cd: too many arguments"
 
@@ -53,7 +48,6 @@ def cmd_cd(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
 
 
 def cmd_cat(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
-    """Display contents of one or more files from virtual file system."""
     if not args:
         return 1, "cat: missing file operand"
 
@@ -73,7 +67,6 @@ def cmd_cat(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
 
 
 def cmd_rev(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
-    """Reverse lines character by character from specified virtual files."""
     if not args:
         return 1, "rev: missing file operand"
 
@@ -94,7 +87,6 @@ def cmd_rev(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
 
 
 def cmd_touch(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
-    """Create empty virtual files or update modification status."""
     if not args:
         return 1, "touch: missing file operand"
 
@@ -109,7 +101,6 @@ def cmd_touch(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
 
 
 def cmd_mv(shell: "ShellCore", args: list[str]) -> tuple[int, str]:
-    """Move or rename files and directories in virtual file system."""
     if not args:
         return 1, "mv: missing file operand"
     if len(args) == 1:

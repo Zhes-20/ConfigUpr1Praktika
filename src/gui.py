@@ -1,5 +1,3 @@
-"""Graphical user interface for the shell emulator using Tkinter."""
-
 import os
 import tkinter as tk
 from tkinter import font
@@ -12,14 +10,11 @@ EXIT_DELAY_MS = 300
 
 
 class ShellGui:
-    """Tkinter-based GUI window for interactive terminal emulation."""
-
     def __init__(
         self,
         shell: ShellCore,
         on_exit: Optional[Callable[[], None]] = None,
     ) -> None:
-        """Initialize main window, widgets and bind keyboard events."""
         self.shell = shell
         self.on_exit = on_exit
         self.history: list[str] = []
@@ -38,7 +33,6 @@ class ShellGui:
         self._check_and_run_script()
 
     def _build_widgets(self) -> None:
-        """Create and place console text display and input frame."""
         input_frame = tk.Frame(self.root, bg="#181818")
         input_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
 
@@ -69,7 +63,6 @@ class ShellGui:
         self._build_text_area()
 
     def _build_text_area(self) -> None:
-        """Create scrollable text area for terminal output."""
         text_frame = tk.Frame(self.root, bg="#181818")
         text_frame.pack(
             side=tk.TOP, fill=tk.BOTH, expand=True, padx=10, pady=(10, 0)
@@ -93,7 +86,6 @@ class ShellGui:
         scrollbar.config(command=self.text_area.yview)
 
     def _show_welcome_banner(self) -> None:
-        """Display startup debug info, VFS structure and greeting message."""
         banner = self.shell.config.dump_debug_info()
         self.write_output(f"{banner}\n")
         if self.shell.vfs_error:
@@ -107,12 +99,10 @@ class ShellGui:
         self.write_output("\nДобро пожаловать в эмулятор!\n\n")
 
     def _enable_user_input(self) -> None:
-        """Enable keyboard input in terminal entry field."""
         self.entry.configure(state=tk.NORMAL)
         self.entry.focus_set()
 
     def _check_and_run_script(self) -> None:
-        """Load startup script if path is provided in configuration."""
         script_path = self.shell.config.script_path
         if not script_path:
             return
@@ -138,7 +128,6 @@ class ShellGui:
             self._enable_user_input()
 
     def _run_next_script_line(self) -> None:
-        """Execute one script line and schedule next if no error."""
         if not self.script_lines:
             self._enable_user_input()
             return
@@ -172,18 +161,15 @@ class ShellGui:
         self.root.after(SCRIPT_STEP_DELAY_MS, self._run_next_script_line)
 
     def write_output(self, text: str) -> None:
-        """Append text to the console display widget."""
         self.text_area.configure(state=tk.NORMAL)
         self.text_area.insert(tk.END, text)
         self.text_area.see(tk.END)
         self.text_area.configure(state=tk.DISABLED)
 
     def _update_prompt(self) -> None:
-        """Update prompt label to reflect current shell working path."""
         self.prompt_label.configure(text=self.shell.get_prompt())
 
     def _handle_return(self, _event: tk.Event) -> None:
-        """Process entered command line upon pressing Enter."""
         command = self.entry.get()
         self.entry.delete(0, tk.END)
         if command.strip():
@@ -202,14 +188,12 @@ class ShellGui:
             self.root.after(EXIT_DELAY_MS, self.root.destroy)
 
     def _handle_history_up(self, _event: tk.Event) -> None:
-        """Navigate backward in command history."""
         if self.history and self.history_index > 0:
             self.history_index -= 1
             self.entry.delete(0, tk.END)
             self.entry.insert(0, self.history[self.history_index])
 
     def _handle_history_down(self, _event: tk.Event) -> None:
-        """Navigate forward in command history."""
         if self.history and self.history_index < len(self.history) - 1:
             self.history_index += 1
             self.entry.delete(0, tk.END)
@@ -219,5 +203,4 @@ class ShellGui:
             self.entry.delete(0, tk.END)
 
     def run(self) -> None:
-        """Start the Tkinter event loop."""
         self.root.mainloop()

@@ -1,5 +1,3 @@
-"""In-memory virtual file system loaded from JSON representation."""
-
 import base64
 import binascii
 import json
@@ -12,13 +10,10 @@ MTIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 def current_mtime() -> str:
-    """Return current time formatted as node modification time."""
     return datetime.now().strftime(MTIME_FORMAT)
 
 
 class VfsNode:
-    """Node in the virtual file system tree representing file or directory."""
-
     def __init__(
         self,
         name: str,
@@ -26,7 +21,6 @@ class VfsNode:
         content: str = "",
         meta: Optional[dict] = None,
     ) -> None:
-        """Initialize VFS node with name, directory flag and metadata."""
         self.name = name
         self.is_dir = is_dir
         self.content = content
@@ -44,7 +38,6 @@ class VfsNode:
         is_dir: bool,
         content: str,
     ) -> int:
-        """Determine node size from explicit parameter or content length."""
         if given_size is not None:
             return given_size
         if not is_dir and content:
@@ -56,7 +49,6 @@ class VfsNode:
 
 
 def _parse_vfs_dict(name: str, data: dict) -> VfsNode:
-    """Recursively parse JSON dictionary into VfsNode hierarchy."""
     if not isinstance(data, dict):
         raise ValueError("Элемент VFS должен быть объектом")
 
@@ -89,14 +81,10 @@ def _parse_vfs_dict(name: str, data: dict) -> VfsNode:
 
 
 class Vfs:
-    """In-memory virtual file system manager."""
-
     def __init__(self) -> None:
-        """Initialize empty virtual file system with root directory."""
         self.root = VfsNode(name="/", is_dir=True)
 
     def load_from_json(self, filepath: str) -> None:
-        """Load and parse virtual file system tree from JSON file."""
         if not filepath:
             return
 
@@ -117,11 +105,9 @@ class Vfs:
         self.root = _parse_vfs_dict("/", data)
 
     def dump_structure(self) -> list[str]:
-        """Return formatted lines showing the entire VFS tree structure."""
         result: list[str] = []
 
         def _traverse(node: VfsNode, path: str) -> None:
-            """Traverse VFS tree recursively to build formatted lines."""
             kind = "dir" if node.is_dir else "file"
             meta_str = (
                 f"[{kind}, {node.permissions}, {node.owner}, {node.size}B]"
@@ -138,11 +124,9 @@ class Vfs:
 
     @staticmethod
     def split_path(path_str: str) -> list[str]:
-        """Split clean path string into individual non-empty components."""
         return [part for part in path_str.split("/") if part]
 
     def resolve_path(self, cwd: str, target: str) -> str:
-        """Resolve relative or absolute target path against current cwd."""
         parts = [] if target.startswith("/") else self.split_path(cwd)
         for segment in target.split("/"):
             if not segment or segment == ".":
@@ -155,7 +139,6 @@ class Vfs:
         return "/" + "/".join(parts)
 
     def get_node(self, canonical_path: str) -> Optional[VfsNode]:
-        """Traverse tree and return node for canonical path if exists."""
         if canonical_path == "/":
             return self.root
 
@@ -168,7 +151,6 @@ class Vfs:
         return current
 
     def list_dir(self, canonical_path: str) -> list[str]:
-        """Return sorted names of all entries in target directory."""
         node = self.get_node(canonical_path)
         if node is None:
             raise FileNotFoundError(f"Каталог не найден: {canonical_path}")
@@ -177,7 +159,6 @@ class Vfs:
         return sorted(node.children.keys())
 
     def read_file(self, canonical_path: str) -> str:
-        """Decode base64 content of virtual file to string."""
         node = self.get_node(canonical_path)
         if node is None:
             raise FileNotFoundError(f"Файл не найден: {canonical_path}")
@@ -191,7 +172,6 @@ class Vfs:
             return f"[Ошибка декодирования base64: {err}]"
 
     def touch(self, canonical_path: str) -> None:
-        """Create empty file or touch existing file at canonical path."""
         node = self.get_node(canonical_path)
         if node is not None:
             node.mtime = current_mtime()
@@ -223,7 +203,6 @@ class Vfs:
         self,
         src_path: str,
     ) -> tuple[VfsNode, VfsNode, str]:
-        """Validate move source node and return source, parent and name."""
         if src_path == "/":
             raise PermissionError("Нельзя перемещать корневой каталог")
 
@@ -246,7 +225,6 @@ class Vfs:
         src_name: str,
         dst_path: str,
     ) -> None:
-        """Move source node to destination path with renaming."""
         dst_segments = self.split_path(dst_path)
         new_name = dst_segments[-1]
         dst_parent = self.get_node("/" + "/".join(dst_segments[:-1]))
@@ -258,7 +236,6 @@ class Vfs:
         dst_parent.children[new_name] = src_node
 
     def move(self, src_path: str, dst_path: str) -> None:
-        """Move or rename node in virtual file system tree in memory."""
         if dst_path == src_path:
             return
 
