@@ -1,3 +1,5 @@
+"""Core shell logic including environment expansion and command dispatch."""
+
 import os
 import re
 import shlex
@@ -9,6 +11,7 @@ from src.vfs import Vfs
 
 
 def _validate_env_syntax(text: str) -> None:
+    """Validate syntax of braced environment variables in text."""
     pos = 0
     while True:
         idx = text.find("${", pos)
@@ -28,10 +31,12 @@ def _validate_env_syntax(text: str) -> None:
 
 
 def expand_env_vars(text: str) -> str:
+    """Expand environment variables formatted as $VAR or ${VAR}."""
     _validate_env_syntax(text)
     pattern = re.compile(r"\$\{([A-Za-z0-9_]+)\}|\$([A-Za-z0-9_]+)")
 
     def replace_match(match: re.Match[str]) -> str:
+        """Replace regex match with OS environment variable value."""
         var_name = match.group(1) or match.group(2)
         return os.environ.get(var_name, "")
 
@@ -39,6 +44,7 @@ def expand_env_vars(text: str) -> str:
 
 
 def parse_command_line(raw_line: str) -> list[str]:
+    """Parse raw line into arguments after expanding environment variables."""
     expanded = expand_env_vars(raw_line)
     try:
         return shlex.split(expanded)
@@ -49,7 +55,10 @@ def parse_command_line(raw_line: str) -> list[str]:
 
 
 class ShellCore:
+    """Shell emulator core handling execution and state."""
+
     def __init__(self, config: Optional[Config] = None) -> None:
+        """Initialize shell core with configuration, VFS and state."""
         self.config = config or Config()
         self.username = self.config.username
         self.hostname = self.config.hostname
@@ -60,6 +69,7 @@ class ShellCore:
         self._load_vfs()
 
     def _load_vfs(self) -> None:
+        """Load virtual file system from configured JSON file path."""
         if not self.config.vfs_path:
             return
         try:
@@ -68,12 +78,15 @@ class ShellCore:
             self.vfs_error = str(load_err)
 
     def get_title(self) -> str:
+        """Return formatted window title based on OS user and hostname."""
         return f"Эмулятор - [{self.username}@{self.hostname}]"
 
     def get_prompt(self) -> str:
+        """Return shell prompt string."""
         return f"[{self.username}@{self.hostname} {self.cwd}]$ "
 
     def execute_script_file(self, script_path: str) -> tuple[int, str]:
+        """Execute commands from script file sequentially."""
         if not os.path.exists(script_path):
             return 1, f"script error: file not found: {script_path}"
         try:
@@ -102,6 +115,7 @@ class ShellCore:
         cmd: str,
         args: list[str],
     ) -> tuple[int, str]:
+        """Dispatch command name to corresponding handler function."""
         if cmd == "exit":
             if args:
                 return 1, "exit: too many arguments"
@@ -131,6 +145,7 @@ class ShellCore:
         return 127, f"{cmd}: command not found"
 
     def execute_line(self, raw_line: str) -> tuple[int, str]:
+        """Execute single command line and return exit code and output."""
         if not raw_line or raw_line in ("\n", "\r\n"):
             return 0, ""
 

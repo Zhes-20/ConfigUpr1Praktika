@@ -1,3 +1,5 @@
+"""Unit tests for emulator startup scripts shipped with the project."""
+
 import glob
 import unittest
 
@@ -20,6 +22,7 @@ FAILING_SCRIPTS = (
 
 
 def run_script(script_path: str, vfs_path: str) -> tuple[int, str, str]:
+    """Run script file and return code, output and its last command."""
     shell = ShellCore(config=Config(vfs_path=vfs_path))
     code, out = shell.execute_script_file(script_path)
     with open(script_path, "r", encoding="utf-8") as file_handle:
@@ -28,13 +31,17 @@ def run_script(script_path: str, vfs_path: str) -> tuple[int, str, str]:
 
 
 class TestStartupScripts(unittest.TestCase):
+    """Test suite running every startup script against its VFS."""
+
     def test_successful_scripts_reach_exit(self) -> None:
+        """Verify demo scripts run to the end without errors."""
         for name, vfs_path in SUCCESSFUL_SCRIPTS.items():
             code, out, _ = run_script(f"{SCRIPTS_DIR}/{name}", vfs_path)
             self.assertEqual(code, 0, name)
             self.assertTrue(out.endswith("logout"), name)
 
     def test_failing_scripts_stop_on_last_line(self) -> None:
+        """Verify scripts with error stop exactly at the failing command."""
         paths = [f"{SCRIPTS_DIR}/{name}" for name in FAILING_SCRIPTS[:2]]
         paths += sorted(glob.glob(f"{SCRIPTS_DIR}/errors/*.txt"))
         for path in paths:
@@ -43,6 +50,7 @@ class TestStartupScripts(unittest.TestCase):
             self.assertTrue(out.endswith(f"aborted at: {last_line}"), path)
 
     def test_script_stops_at_first_error(self) -> None:
+        """Verify commands after the first error are not executed."""
         path = f"{SCRIPTS_DIR}/{FAILING_SCRIPTS[-1]}"
         code, out, _ = run_script(path, "vfs_data/vfs_medium.json")
         self.assertEqual(code, 1)

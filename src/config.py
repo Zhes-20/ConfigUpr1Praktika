@@ -1,3 +1,5 @@
+"""Configuration management and command line argument parsing."""
+
 import argparse
 import getpass
 import socket
@@ -5,6 +7,8 @@ from typing import Optional
 
 
 class Config:
+    """Store runtime configuration parameters for the emulator."""
+
     def __init__(
         self,
         vfs_path: str = "",
@@ -12,12 +16,14 @@ class Config:
         username: Optional[str] = None,
         hostname: Optional[str] = None,
     ) -> None:
+        """Initialize configuration fields."""
         self.vfs_path = vfs_path
         self.script_path = script_path
         self.username = username or getpass.getuser()
         self.hostname = hostname or socket.gethostname()
 
     def to_dict(self) -> dict[str, str]:
+        """Convert configuration settings into key-value dictionary."""
         return {
             "vfs_path": self.vfs_path or "(none)",
             "script_path": self.script_path or "(none)",
@@ -26,6 +32,7 @@ class Config:
         }
 
     def dump_debug_info(self) -> str:
+        """Format configuration settings for startup debug output."""
         lines = [
             "[DEBUG] Заданные параметры эмулятора:",
             f"[DEBUG]   vfs_path: {self.vfs_path or '(not set)'}",
@@ -37,6 +44,7 @@ class Config:
 
 
 def parse_cli_args(args: Optional[list[str]] = None) -> Config:
+    """Parse command line options and construct Config instance."""
     parser = argparse.ArgumentParser(
         description="UNIX-like Shell Emulator for Configuration Management"
     )
@@ -63,5 +71,6 @@ def parse_cli_args(args: Optional[list[str]] = None) -> Config:
 
 
 def format_conf_dump(cfg: Config) -> str:
+    """Format configuration fields into key: value output string."""
     pairs = cfg.to_dict()
     return "\n".join(f"{key}: {val}" for key, val in pairs.items())
